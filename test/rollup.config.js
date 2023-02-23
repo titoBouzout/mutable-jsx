@@ -9,13 +9,11 @@ const plugins = [
 	babel({
 		extensions: ['.js', '.ts'],
 		babelHelpers: 'bundled',
-		presets: ['@babel/preset-typescript'],
 		plugins: [
 			[
-				'babel-plugin-transform-rename-import',
+				'babel-plugin-jsx-dom-expressions',
 				{
-					original: 'rxcore',
-					replacement: '../../../src/core',
+					moduleName: 'mutable-jsx',
 				},
 			],
 		],
@@ -23,6 +21,7 @@ const plugins = [
 	replace({
 		values: {
 			'process.env.NODE_ENV': JSON.stringify('production'),
+			'__DEV__': false,
 			__buildDate__: () => Date.now(),
 			__buildVersion: 1,
 		},
@@ -32,18 +31,13 @@ const plugins = [
 
 export default [
 	{
-		input: 'src/index.ts',
+		input: 'index.js',
 		output: [
 			{
 				format: 'cjs',
-				file: 'lib/index.js',
-			},
-			{
-				format: 'es',
 				file: 'dist/index.js',
 			},
 		],
-		external: ['mobx'],
 		plugins,
 	},
 ]
