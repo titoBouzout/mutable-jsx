@@ -1,34 +1,103 @@
-import {
-	autorun,
-	computed,
-	untracked,
-	$mobx,
-	observable,
-	action,
-} from 'mobx'
+// This is our temporary half baked Reactive Library to replace mobx
+// code from https://dev.to/ryansolid/building-a-reactive-library-from-scratch-1i0p
 
-export { untracked as untrack }
+const contextTEMP = []
+
+let areWeUntracking = false
+function untrackedTEMP(fn) {
+	areWeUntracking = true
+	let ret = fn()
+	areWeUntracking = false
+	return ret
+}
+
+function subscribeTEMP(running, subscriptions) {
+	subscriptions.add(running)
+	running.dependencies.add(subscriptions)
+}
+
+function createSignalTEMP(value) {
+	const subscriptions = new Set()
+
+	const read = () => {
+		const running = contextTEMP[contextTEMP.length - 1]
+		if (running /* && !areWeUntracking*/) {
+			subscribeTEMP(running, subscriptions)
+		}
+		return value
+	}
+
+	const write = nextValue => {
+		value = nextValue
+
+		for (const sub of [...subscriptions]) {
+			sub.execute()
+		}
+	}
+	return [read, write]
+}
+
+function cleanupTEMP(running) {
+	for (const dep of running.dependencies) {
+		dep.delete(running)
+	}
+	running.dependencies.clear()
+}
+
+function createEffectTEMP(fn) {
+	const effect = {
+		execute() {
+			cleanupTEMP(effect)
+			contextTEMP.push(effect)
+			try {
+				fn()
+			} finally {
+				contextTEMP.pop()
+			}
+		},
+		dependencies: new Set(),
+	}
+
+	effect.execute()
+}
+
+function computedTEMP(fn) {
+	return fn()
+}
+
+export { untrackedTEMP as untrack }
+
+// end temp library
+
+// naive mutable definition
+export function mutable(obj) {
+	const [read, write] = createSignalTEMP()
+	return new Proxy(obj, {
+		set(target, prop, value, receiver) {
+			target[prop] = value
+			write()
+			return true
+		},
+		get(target, prop, receiver) {
+			read()
+			return target[prop]
+		},
+	})
+}
+
+// dom-expressions-jsx stuff
 
 let globalContext = null
-export class Component {
-	constructor(props) {
-		this.props = props
-	}
-	render(props) {
-		return props.children
-	}
-}
-Component.prototype.isClassComponent = true
 
 export function mergeProps() {}
 
 export function root(fn) {
-	let d, ret
+	let d = []
 	globalContext = {
-		disposables: (d = []),
+		disposables: d,
 		owner: globalContext,
 	}
-	ret = untracked(() =>
+	let ret = untrackedTEMP(() =>
 		fn(() => {
 			let k, len
 			for (k = 0, len = d.length; k < len; k++) d[k]()
@@ -53,7 +122,7 @@ export function effect(fn, current) {
 			for (let k = 0, len = d.length; k < len; k++) d[k]()
 			final && dispose()
 		},
-		dispose = autorun(() => {
+		dispose = createEffectTEMP(() => {
 			cleanupFn(false)
 			const prev = globalContext
 			globalContext = context
@@ -64,15 +133,16 @@ export function effect(fn, current) {
 }
 
 // only updates when boolean expression changes
+
 export function memo(fn, equal) {
-	const o = observable.box(),
-		update = action(r => o.set(r))
+	const [read, write] = createSignalTEMP()
+	const update = r => write(r)
 	effect(prev => {
 		const res = fn()
 		;(!equal || prev !== res) && update(res)
 		return res
 	})
-	return () => o.get()
+	return () => read()
 }
 export function createSelector(source, fn = (a, b) => a === b) {
 	let subs = new Map()
@@ -91,32 +161,28 @@ export function createSelector(source, fn = (a, b) => a === b) {
 	})
 	return key => {
 		let l
-		if (!(l = subs.get(key))) subs.set(key, (l = observable.box()))
-		l.get()
+		if (!(l = subs.get(key))) {
+			subs.set(key, (l = createSignalTEMP()))
+		}
+		l[0]() // read
 		l._count ? l._count++ : (l._count = 1)
 		cleanup(() => (l._count > 1 ? l._count-- : subs.delete(key)))
 		return fn(key, v)
 	}
 }
 export function createComponent(Comp, props) {
-	if (Comp.prototype && Comp.prototype.isClassComponent) {
-		return untracked(() => {
-			const comp = new Comp(props)
-			return comp.render(props)
-		})
-	}
-	return untracked(() => Comp(props))
+	return untrackedTEMP(() => Comp(props))
 }
 
 // dynamic import to support code splitting
 export function lazy(fn) {
 	return props => {
 		let Comp
-		const result = observable.box(),
-			update = action(component => result.set(component.default))
+		const [read, write] = createSignalTEMP()
+		const update = component => write(component.default)
 		fn().then(update)
-		const rendered = computed(
-			() => (Comp = result.get()) && untracked(() => Comp(props)),
+		const rendered = computedTEMP(
+			() => (Comp = read()) && untrackedTEMP(() => Comp(props)),
 		)
 		return () => rendered.get()
 	}
@@ -158,10 +224,10 @@ export function lookup(owner, key) {
 }
 export function resolveChildren(children) {
 	if (typeof children === 'function') {
-		const c = observable.box(),
-			update = action(child => c.set(child))
+		const [read, write] = createSignalTEMP()
+		const update = child => write(child)
 		effect(() => update(children()))
-		return () => c.get()
+		return () => read()
 	}
 	if (Array.isArray(children)) {
 		const results = []
@@ -177,17 +243,15 @@ export function resolveChildren(children) {
 }
 export function createProvider(id) {
 	return function provider(props) {
-		let rendered = observable.box(),
-			update = action(() =>
-				rendered.set(resolveChildren(props.children)),
-			)
+		let [read, write] = createSignalTEMP()
+		let update = () => write(resolveChildren(props.children))
 		effect(() => {
 			globalContext.context = {
 				[id]: props.value,
 			}
 			update()
 		})
-		return () => rendered.get()
+		return () => read()
 	}
 }
 
@@ -206,8 +270,8 @@ export function map(list, mapFn) {
 		let newItems = fn ? list() : list,
 			i,
 			j
-		!fn && list[$mobx].atom_.reportObserved()
-		return untracked(() => {
+		!fn /* && list[$mobx].atom_.reportObserved()*/
+		return untrackedTEMP(() => {
 			let newLen = newItems.length,
 				newIndices,
 				newIndicesNext,

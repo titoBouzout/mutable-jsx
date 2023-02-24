@@ -1,14 +1,16 @@
 export {
+	// core
 	root,
 	cleanup,
 	createSelector,
-	Component,
 	lazy,
 	createContext,
 	useContext,
 	map,
 	splitProps,
 	untrack,
+	// library
+	mutable,
 } from './lib'
 
 import type { JSX } from 'dom-expressions/src/jsx'
