@@ -20,7 +20,7 @@
 		"@rollup/plugin-node-resolve": "14.1.0",
 		"@rollup/plugin-replace": "^5.0.2",
 		"csstype": "^3.1.0",
-		"dom-expressions": "0.34.12",
+		"dom-expressions": "^0.35.16",
 		"mobx": "^6.6.2",
 		"ncp": "2.0.0",
 		"rollup": "^2.41.4",

@@ -20,6 +20,8 @@ export class Component {
 }
 Component.prototype.isClassComponent = true
 
+export function mergeProps() {}
+
 export function root(fn) {
 	let d, ret
 	globalContext = {
