@@ -3,11 +3,11 @@
 
 const contextTEMP = []
 
-let areWeUntracking = false
+let areWeTracking = true
 function untrackedTEMP(fn) {
-	areWeUntracking = true
+	areWeTracking = false
 	let ret = fn()
-	areWeUntracking = false
+	areWeTracking = true
 	return ret
 }
 
@@ -21,7 +21,7 @@ function createSignalTEMP(value) {
 
 	const read = () => {
 		const running = contextTEMP[contextTEMP.length - 1]
-		if (running /* && !areWeUntracking*/) {
+		if (running && areWeTracking) {
 			subscribeTEMP(running, subscriptions)
 		}
 		return value
