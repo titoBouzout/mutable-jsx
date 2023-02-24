@@ -2,16 +2,17 @@
 	"name": "test",
 	"version": "1.0.0",
 	"main": "index.html",
+	"type": "module",
 	"scripts": {
 		"build": "rollup -c"
 	},
 	"dependencies": {
-		"@babel/core": "7.12.0",
-		"@rollup/plugin-babel": "5.3.1",
-		"@rollup/plugin-node-resolve": "14.1.0",
+		"@babel/core": "7.21.0",
+		"@rollup/plugin-babel": "6.0.3",
+		"@rollup/plugin-node-resolve": "15.0.1",
 		"@rollup/plugin-replace": "^5.0.2",
-		"babel-plugin-jsx-dom-expressions": "^0.34.0",
-		"mobx": "6.6.2",
-		"rollup": "^2.41.4"
+		"babel-plugin-jsx-dom-expressions": "^0.35.16",
+		"mobx": "6.8.0",
+		"rollup": "^3.17.2"
 	}
 }
