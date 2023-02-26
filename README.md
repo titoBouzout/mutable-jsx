@@ -20,12 +20,8 @@ cd test
 
 npm link mutable-jsx
 
+npm run test
+
 ```
 
 open in a browser test/index.html
-
-## Modify
-
-1. modify anything
-2. just run scripts/test.bat
-3. refresh index.html

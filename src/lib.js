@@ -5,9 +5,10 @@ const contextTEMP = []
 
 let areWeTracking = true
 function untrackedTEMP(fn) {
+	let x = areWeTracking
 	areWeTracking = false
 	let ret = fn()
-	areWeTracking = true
+	areWeTracking = x
 	return ret
 }
 
@@ -21,6 +22,7 @@ function createSignalTEMP(value) {
 
 	const read = () => {
 		const running = contextTEMP[contextTEMP.length - 1]
+
 		if (running && areWeTracking) {
 			subscribeTEMP(running, subscriptions)
 		}
@@ -38,8 +40,8 @@ function createSignalTEMP(value) {
 }
 
 function cleanupTEMP(running) {
-	for (const dep of running.dependencies) {
-		dep.delete(running)
+	for (const dependency of running.dependencies) {
+		dependency.delete(running)
 	}
 	running.dependencies.clear()
 }
@@ -50,7 +52,10 @@ function createEffectTEMP(fn) {
 			cleanupTEMP(effect)
 			contextTEMP.push(effect)
 			try {
+				let x = areWeTracking
+				areWeTracking = true
 				fn()
+				areWeTracking = x
 			} finally {
 				contextTEMP.pop()
 			}
@@ -59,6 +64,9 @@ function createEffectTEMP(fn) {
 	}
 
 	effect.execute()
+	return () => {
+		cleanupTEMP(effect)
+	}
 }
 
 function computedTEMP(fn) {
@@ -92,43 +100,44 @@ let globalContext = null
 export function mergeProps() {}
 
 export function root(fn) {
-	let d = []
+	let disposables = []
 	globalContext = {
-		disposables: d,
+		disposables: disposables,
 		owner: globalContext,
 	}
 	let ret = untrackedTEMP(() =>
 		fn(() => {
-			let k, len
-			for (k = 0, len = d.length; k < len; k++) d[k]()
-			d = []
+			for (let k = 0, l = disposables.length; k < l; k++)
+				disposables[k]()
+			disposables = []
 		}),
 	)
 	globalContext = globalContext.owner
 	return ret
 }
 export function cleanup(fn) {
-	let ref
-	;(ref = globalContext) != null && ref.disposables.push(fn)
+	globalContext?.disposables.push(fn)
 }
 export function effect(fn, current) {
 	const context = {
-			disposables: [],
-			owner: globalContext,
-		},
-		cleanupFn = final => {
-			const d = context.disposables
-			context.disposables = []
-			for (let k = 0, len = d.length; k < len; k++) d[k]()
-			final && dispose()
-		},
-		dispose = createEffectTEMP(() => {
-			cleanupFn(false)
-			const prev = globalContext
-			globalContext = context
-			current = fn(current)
-			globalContext = prev
-		})
+		disposables: [],
+		owner: globalContext,
+	}
+	const cleanupFn = final => {
+		const disposable = context.disposables
+		context.disposables = []
+		for (let k = 0, l = disposable.length; k < l; k++) disposable[k]()
+		final && dispose()
+	}
+	const dispose = createEffectTEMP(() => {
+		cleanupFn(false)
+		const prev = globalContext
+		globalContext = context
+
+		current = fn(current)
+
+		globalContext = prev
+	})
 	cleanup(() => cleanupFn(true))
 }
 
@@ -144,6 +153,7 @@ export function memo(fn, equal) {
 	})
 	return () => read()
 }
+
 export function createSelector(source, fn = (a, b) => a === b) {
 	let subs = new Map()
 	let v
@@ -227,7 +237,7 @@ export function resolveChildren(children) {
 		const [read, write] = createSignalTEMP()
 		const update = child => write(child)
 		effect(() => update(children()))
-		return () => read()
+		return read
 	}
 	if (Array.isArray(children)) {
 		const results = []
@@ -251,7 +261,7 @@ export function createProvider(id) {
 			}
 			update()
 		})
-		return () => read()
+		return read
 	}
 }
 

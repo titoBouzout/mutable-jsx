@@ -1,14 +1,17 @@
 export {
-	// core
+	// reactivity
 	root,
 	cleanup,
+	effect,
 	createSelector,
-	lazy,
+	untrack,
+	// context
 	createContext,
 	useContext,
+	// api
+	lazy,
 	map,
 	splitProps,
-	untrack,
 	// library
 	mutable,
 } from './lib'

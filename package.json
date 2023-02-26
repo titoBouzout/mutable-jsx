@@ -8,11 +8,12 @@
 		"url": "https://github.com/titoBouzout/mutable-jsx"
 	},
 	"module": "dist/index.js",
-	"main": "lib/index.js",
+	"main": "dist/index.js",
 	"types": "types/index.d.ts",
 	"type": "module",
 	"scripts": {
-		"build": "rollup -c && ncp node_modules/dom-expressions/src/client.d.ts ./types/client.d.ts && ncp node_modules/dom-expressions/src/jsx.d.ts ./types/jsx.d.ts && tsc"
+		"build": "rollup -c && ncp node_modules/dom-expressions/src/client.d.ts ./types/client.d.ts && ncp node_modules/dom-expressions/src/jsx.d.ts ./types/jsx.d.ts && tsc",
+		"test": "rollup -c --watch"
 	},
 	"dependencies": {
 		"@babel/core": "7.21.0",

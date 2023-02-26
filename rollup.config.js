@@ -1,6 +1,26 @@
 import babel from '@rollup/plugin-babel'
 import nodeResolve from '@rollup/plugin-node-resolve'
 import replace from '@rollup/plugin-replace'
+import { spawn } from 'child_process'
+
+function test() {
+	let testFile = 'test/index.test.js'
+	let subprocess = {}
+	return {
+		buildStart(options) {
+			this.addWatchFile(testFile)
+		},
+		async buildEnd(e) {
+			if (subprocess.kill) {
+				subprocess.kill()
+			}
+
+			subprocess = spawn('node', [testFile], {
+				stdio: 'inherit',
+			})
+		},
+	}
+}
 
 export default [
 	{
@@ -76,6 +96,7 @@ export default [
 				},
 				preventAssignment: false,
 			}),
+			test(),
 		],
 	},
 ]
