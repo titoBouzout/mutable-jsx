@@ -1,7 +1,7 @@
 {
 	"name": "mutable-jsx",
 	"description": "Experimental Reactive library focused on mutability. DOM Expressions is the Render Runtime to commit changes to the DOM (way faster than a Virtual DOM).",
-	"version": "0.1.4",
+	"version": "0.1.5",
 	"author": "Tito Bouzout",
 	"repository": {
 		"type": "git",
