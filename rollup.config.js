@@ -4,7 +4,7 @@ import replace from '@rollup/plugin-replace'
 import { spawn } from 'child_process'
 
 function test() {
-	let testFile = 'test/index.test.js'
+	let testFile = 'test/index.test.node.js'
 	let subprocess = {}
 	return {
 		buildStart(options) {
@@ -27,10 +27,6 @@ export default [
 		input: 'src/index.ts',
 		output: [
 			{
-				format: 'cjs',
-				file: 'lib/index.js',
-			},
-			{
 				format: 'es',
 				file: 'dist/index.js',
 			},
@@ -48,7 +44,7 @@ export default [
 						'babel-plugin-transform-rename-import',
 						{
 							original: 'rxcore',
-							replacement: '../../../src/core',
+							replacement: '../../../src/dom-expressions/index',
 						},
 					],
 				],
@@ -63,8 +59,9 @@ export default [
 			}),
 		],
 	},
+	// html test
 	{
-		input: 'test/index.js',
+		input: 'test/index.html.js',
 		output: [
 			{
 				format: 'cjs',
@@ -82,7 +79,7 @@ export default [
 					[
 						'babel-plugin-jsx-dom-expressions',
 						{
-							moduleName: 'mutable-jsx',
+							moduleName: '../dist/index.js',
 						},
 					],
 				],

@@ -1,6 +1,6 @@
-node_modules/
-lib/
 dist/
+node_modules/
 package-lock.json
 test/dist/index.js
 types/
+todo/

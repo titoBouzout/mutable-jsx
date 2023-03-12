@@ -1,27 +1,13 @@
 # Mutable JSX
 
-Based on mobx-jsx https://github.com/ryansolid/mobx-jsx . Was taken as base to understand DOM Expressions and possibly make something new with it. The idea is to create a Reactive library focused on mutability. The file to edit for that goal is src/lib.js. The TypeScript of that file has been converted to JavaScript.
+Experimental Reactive library focused on mutability. DOM Expressions is the Render Runtime to commit changes to the DOM (way faster than a Virtual DOM).
 
-## Building
+This is a work in progress. The goal is to use a Reactive Graph + DOM Expressions to provide a library with an API that I could modify to my needs.
 
-```
-npm install
+## History
 
-npm run build
+To achieve the goal I had to mash up many different repos to get something working that I could understand, modify and finally extend.
 
-npm link
-
-```
-
-## Testing
-
-```
-cd test
-
-npm link mutable-jsx
-
-npm run test
-
-```
-
-open in a browser test/index.html
+1. Started based on a version of mobx-jsx https://github.com/ryansolid/mobx-jsx
+2. Replaced mobx with https://dev.to/ryansolid/building-a-reactive-library-from-scratch-1i0p . Run into issues with nested effects.
+3. Replaced the article implementation with a pure JavaScript version of Solid Graph.

@@ -1,46 +1,16 @@
+// Used by whats generated via the babel transform
+
 export {
-	// reactivity
-	root,
-	cleanup,
-	effect,
-	createSelector,
-	untrack,
-	// context
-	createContext,
-	useContext,
-	// api
-	lazy,
-	map,
-	splitProps,
-	// library
-	mutable,
-} from './lib'
+	// template,
+	insert,
+	render,
+	delegateEvents,
+} from 'dom-expressions/src/client'
 
-import type { JSX } from 'dom-expressions/src/jsx'
+// Used to override dom expressions functions for the frontend
 
-export type Context = {
-	id: symbol
-	Provider: (props: any) => any
-	defaultValue: unknown
-}
-export type FunctionComponent<P = {}> = (
-	props: PropsWithChildren<P>,
-) => JSX.Element
+export { template } from './dom-expressions/override'
 
-type ComponentConstructor<P> =
-	| FunctionComponent<P>
-	| (new (props: PropsWithChildren<P>) => JSX.Element)
+// Our lib
 
-export type ComponentProps<
-	T extends keyof JSX.IntrinsicElements | ComponentConstructor<any>,
-> = T extends ComponentConstructor<infer P>
-	? P
-	: T extends keyof JSX.IntrinsicElements
-	? JSX.IntrinsicElements[T]
-	: {}
-
-type PropsWithChildren<P> = P & { children?: JSX.Element }
-
-export * from 'dom-expressions/src/client'
-
-export type { JSX } from 'dom-expressions/src/jsx'
+export * from './lib'

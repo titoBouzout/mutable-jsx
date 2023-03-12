@@ -1,6 +1,6 @@
 {
 	"name": "mutable-jsx",
-	"description": "Reactive library focused on mutability. DOM Expressions is the Render Runtime to commit changes to the DOM way faster than a Virtual DOM",
+	"description": "Experimental Reactive library focused on mutability. DOM Expressions is the Render Runtime to commit changes to the DOM (way faster than a Virtual DOM).",
 	"version": "0.1.4",
 	"author": "Tito Bouzout",
 	"repository": {
@@ -13,7 +13,8 @@
 	"type": "module",
 	"scripts": {
 		"build": "rollup -c && ncp node_modules/dom-expressions/src/client.d.ts ./types/client.d.ts && ncp node_modules/dom-expressions/src/jsx.d.ts ./types/jsx.d.ts && tsc",
-		"test": "rollup -c --watch"
+		"test": "rollup -c --watch",
+		"prepublishOnly": "npm run build"
 	},
 	"dependencies": {
 		"@babel/core": "7.21.0",
